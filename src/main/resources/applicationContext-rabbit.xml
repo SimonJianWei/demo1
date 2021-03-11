@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+ <!--   &lt;!&ndash; delay queue &ndash;&gt;
+    <rabbit:queue name="demo.delay">
+        <rabbit:queue-arguments>
+            <entry key="x-dead-letter-exchange" value="cloud_direct"/>
+            <entry key="x-dead-letter-routing-key" value="demo.queue"/>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+
+    &lt;!&ndash; direct queue &ndash;&gt;
+    <rabbit:queue name="demo.queue">
+        <rabbit:queue-arguments>
+            <entry key="x-dead-letter-exchange" value="cloud_dead"/>
+            <entry key="x-dead-letter-routing-key" value="demo.queue"/>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+
+    &lt;!&ndash; dead queue &ndash;&gt;
+    <rabbit:queue name="demo.dead"/>
+
+    &lt;!&ndash; direct exchange &ndash;&gt;
+    <rabbit:direct-exchange name="cloud_direct" >
+        <rabbit:bindings>
+            <rabbit:binding queue="demo.delay" key="demo.delay"/>
+            <rabbit:binding queue="demo.queue" key="demo.queue"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    &lt;!&ndash; dead exchange &ndash;&gt;
+    <rabbit:direct-exchange name="cloud_dead">
+        <rabbit:bindings>
+            <rabbit:binding queue="demo.dead" key="demo.dead"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>-->
+    <rabbit:queue durable="true" exclusive="false" name="dead.1" auto-declare="true"/>
+
+    <rabbit:queue durable="true" name="direct.1" exclusive="false   " auto-declare="true" >
+        <rabbit:queue-arguments>
+            <!--绑定死信交换机-->
+            <entry key="x-dead-letter-exchange"  value="train.dead"></entry>
+            <entry key="x-dead-letter-routing-key"  value="train.dead"></entry>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+
+    <rabbit:queue durable="true" name="topic.1" auto-delete="false" exclusive="false"  auto-declare="true">
+        <rabbit:queue-arguments>
+            <!--绑定死信交换机-->
+            <entry key="x-dead-letter-exchange"  value="train.dead"></entry>
+            <entry key="x-dead-letter-routing-key"  value="train.dead"></entry>
+        </rabbit:queue-arguments>
+    </rabbit:queue>
+
+    <rabbit:topic-exchange name="train.topic" durable="true" auto-delete="false" id="train.topic" >
+        <rabbit:bindings>
+            <rabbit:binding pattern="train.topic.*" queue="topic.1"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+     <!--direct模式-->
+    <rabbit:direct-exchange name="train.direct" auto-delete="false" >
+        <rabbit:bindings>
+            <rabbit:binding   queue="direct.1"  key="direct.test" ></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <!--死信交换机-->
+    <rabbit:direct-exchange name="train.dead" auto-delete="false" durable="true" >
+        <rabbit:bindings>
+            <rabbit:binding queue="dead.1" key="train.dead" ></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+</beans>
